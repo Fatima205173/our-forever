@@ -1,0 +1,287 @@
+<!--
+Single-file interactive love webpage for Zaki
+How to use:
+1. Download this file as `Zaki-love.html` (File -> Save As in the canvas code view)
+2. Open it in a browser (double-click). For best experience open on phone or send file to him.
+3. To personalize: click the camera icon on the cover to upload Zaki's photo. Use the music upload to add a favorite mp3.
+4. If you want me to host a link for you, tell me and I'll help.
+
+Features:
+- Responsive, mobile-friendly single page
+- "Click to Begin" starts music and animations
+- Click-to-reveal messages with fade-in
+- Floating animated hearts
+- Glow text with his name
+- Upload your photo and audio directly in the page
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>For Zaki ❤️</title>
+  <style>
+    :root{--bg:#0f172a;--accent:#f3c4ff;--muted:#cbd5e1}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{background:linear-gradient(180deg,#071029 0%, #081628 50%, #0f1b2e 100%);color:white;overflow:hidden}
+
+    /* Center container */
+    .stage{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box}
+
+    .card{width:100%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(2,6,23,0.7);backdrop-filter:blur(6px);}
+
+    .cover{display:flex;gap:18px;align-items:center}
+    .left{flex:1}
+    .title{font-size:clamp(22px,5vw,44px);font-weight:700;letter-spacing:0.5px;margin:0}
+    .subtitle{color:var(--muted);margin-top:6px}
+
+    .glowName{display:inline-block;padding:6px 12px;border-radius:999px;background:linear-gradient(90deg, rgba(243,196,255,0.14), rgba(255,240,200,0.06));box-shadow:0 0 24px rgba(243,196,255,0.12);font-weight:700;color:var(--accent);font-size:1.2em}
+
+    .photoWrap{width:170px;height:170px;border-radius:14px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;position:relative}
+    .photoWrap img{width:100%;height:100%;object-fit:cover}
+
+    .btn{margin-top:16px;display:inline-flex;gap:10px;align-items:center;padding:10px 16px;border-radius:999px;border:none;cursor:pointer;background:linear-gradient(90deg,#ffafbd,#ffc3a0);color:#111;font-weight:700}
+
+    .small{font-size:13px;color:var(--muted)}
+
+    /* modal style for messages */
+    .messages{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
+    .msgBtn{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+
+    .reveal{margin-top:18px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));min-height:120px;position:relative}
+    .reveal.hidden{opacity:0;transform:translateY(10px);pointer-events:none}
+    .reveal.visible{animation:fadeup .6s ease forwards}
+    @keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    .final{display:none;flex-direction:column;align-items:center;gap:12px;padding:30px}
+    .final.show{display:flex;animation:fadeup .7s ease forwards}
+
+    /* floating hearts */
+    .heart{position:fixed;pointer-events:none;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.35));}
+
+    /* responsive tweaks */
+    @media (max-width:520px){.cover{flex-direction:column;align-items:center}.left{text-align:center}.photoWrap{width:140px;height:140px}}
+
+    /* small control area */
+    .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+
+    /* sparkle */
+    .sparkle{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff, #ffd1ea);box-shadow:0 0 12px rgba(255,200,230,0.7)}
+
+    /* footer hint */
+    .hint{font-size:13px;color:var(--muted);margin-top:12px}
+    
+
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="card">
+      <div class="cover">
+        <div class="left">
+          <h1 class="title">For <span class="glowName">Zaki</span></h1>
+          <div class="subtitle">Open this when you want to feel very loved. ❤️</div>
+          <div class="controls">
+            <button id="beginBtn" class="btn">Click to Begin</button>
+            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+              <input id="imgUpload" accept="image/*" type="file" style="display:none">
+              <span class="small">Change photo</span>
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+              <input id="audioUpload" accept="audio/*" type="file" style="display:none">
+              <span class="small">Add music</span>
+            </label>
+          </div>
+          <div class="hint">Tip: tap "Click to Begin" to unlock music & animations.</div>
+        </div>
+        <div class="photoWrap">
+  <img id="heroImg" src="./him.jpeg">
+
+</div>
+
+      </div>
+
+      <div class="messages" id="messageButtons" style="display:none">
+        <button class="msgBtn" data-id="1">Open our forever</button>
+        <button class="msgBtn" data-id="2">Open the start of us</button>
+        <button class="msgBtn" data-id="3">Open my life with you</button>
+        <button class="msgBtn" data-id="4">Open my favorite person</button>
+        <button class="msgBtn" data-id="5">Final surprise</button>
+      </div>
+
+      <div id="revealBox" class="reveal hidden">Click a button above 💌</div>
+
+      <div class="final" id="finalBox">
+        <div style="font-size:20px;font-weight:700">My Heart, My Zaki</div>
+        <div style="max-width:600px;text-align:center;color:var(--muted)">No distance can shrink the space between us because I carry you in my heart hehe. </div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <div class="sparkle"></div>
+          <div class="sparkle"></div>
+          <div class="sparkle"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- hidden audio element -->
+ <audio id="bgAudio" loop></audio>
+
+
+  <script>
+    // Preload a gentle free-tone fallback (tiny generated base64 silence) -- it's okay to leave blank until user uploads
+    const heroImg = document.getElementById('heroImg');
+    const imgUpload = document.getElementById('imgUpload');
+    const audioUpload = document.getElementById('audioUpload');
+    const bgAudio = document.getElementById('bgAudio');
+    const beginBtn = document.getElementById('beginBtn');
+    const messageButtons = document.getElementById('messageButtons');
+    const revealBox = document.getElementById('revealBox');
+    const finalBox = document.getElementById('finalBox');
+
+    
+    // handle image upload
+    imgUpload.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      heroImg.src = url;
+    });
+
+    // audio upload
+    audioUpload.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      bgAudio.src = url;
+    });
+
+    // main begin button: starts music and shows message buttons and hearts
+    beginBtn.addEventListener('click', async () => {
+      // show message buttons
+      messageButtons.style.display = 'flex';
+      // show little hearts
+      startHearts();
+      bgAudio.src = "./kahintohogi-ourworld-18050.mp3";
+      bgAudio.volume = 0.7;
+      bgAudio.play();
+
+      // subtle animation on begin button
+      beginBtn.disabled = true;
+      beginBtn.innerText = 'Welcome ❤️';
+    });
+
+    // messages content
+    const messages = {
+      1: `Zaki, May Allah place barakah in our forever.
+          May our journey be filled with peace, patience, and kindness.
+          May we grow together in faith and gratitude. May Allah keep our hearts united in goodness.
+          May our forever always return to Him. Ameen ❤️`,
+      2: `This is the beginning Allah chose for us.
+          May He guide us with wisdom and patience.
+          May our hearts grow in faith and kindness.
+          May our journey be filled with peace.
+          May Allah place barakah in our forever.
+          Ameen 🌸.`,
+      3: `I want a life with you that feels calm and safe.
+          Laughing together, growing together, choosing each other every day.
+           Holding hands through every high and low.
+          Keeping Allah at the center of our forever.
+          Just you, me, and His blessings.
+          Ameen ❤️.`,
+      4: `You are my favorite person in every little way.
+          With you, the future feels warm and hopeful.
+          I dream of a life where we grow side by side.
+          Loving you with patience, trust, and faith.
+          Keeping Allah at the heart of our forever.
+          Ameen . ❤️`,
+      5: `You are the dua my heart didn’t know how to ask for.
+          With you, love feels peaceful and true.
+          I look forward to a life of small moments and big dreams with you.
+          Holding on to each other through every chapter ahead.
+          Keeping Allah as our guide in all we become.
+          Forever begins here. Insha Allah ❤️`
+    }
+
+    // button clicks to reveal
+    document.querySelectorAll('.msgBtn').forEach(b => b.addEventListener('click', e => {
+      const id = e.currentTarget.dataset.id;
+      revealBox.classList.remove('hidden');
+      revealBox.classList.add('visible');
+      revealBox.innerHTML = `<div style=\"font-weight:700;margin-bottom:8px\">${document.querySelector('.glowName').innerText}</div><div style=\"color:var(--muted)\">${messages[id]}</div>`;
+      if (id === '5') showFinal();
+      // small audio star pop
+      popSound();
+    }));
+
+    function showFinal(){
+      setTimeout(()=>{
+        finalBox.classList.add('show');
+        // extra hearts
+        for(let i=0;i<10;i++){createHeart();}
+      },650);
+    }
+
+    // sound for clicks (tiny chirp using WebAudio)
+    function popSound(){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type='sine'; o.frequency.value=880; g.gain.value=0.002; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.06);
+      }catch(e){/* ignore */}
+    }
+
+    // heart generation
+    let heartInterval;
+    function startHearts(){
+      if (heartInterval) return;
+      heartInterval = setInterval(()=>{createHeart();}, 800);
+    }
+
+    function createHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      const size = 18 + Math.random()*28;
+      h.style.width = size + 'px';
+      h.style.height = size + 'px';
+      h.style.left = (10 + Math.random()*80) + '%';
+      h.style.top = (60 + Math.random()*30) + '%';
+      h.style.opacity = 0.95;
+      h.innerHTML = `
+        <svg viewBox="0 0 32 29.6" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23.6,0c-2.8,0-5.2,1.5-6.6,3.7C15.6,1.5,13.2,0,10.4,0C4.8,0,0.6,4.3,0.6,9.6c0,11.1,15.5,18,15.5,18s15.5-6.9,15.5-18C31.6,4.3,27.4,0,21.8,0z" fill="url(#g)"/>
+          <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#ff9a9e"/><stop offset="1" stop-color="#fecfef"/></linearGradient></defs>
+        </svg>`;
+      document.body.appendChild(h);
+      // animate
+      const dx = -40 + Math.random()*80;
+      const dur = 3500 + Math.random()*3000;
+      h.animate([{transform:`translateY(0px) translateX(0px) scale(1)`,opacity:1},{transform:`translateY(-160px) translateX(${dx}px) scale(0.7)`,opacity:0}],{duration:dur, easing:'ease-out'});
+      setTimeout(()=>{h.remove();}, dur+50);
+    }
+
+    // small fallback: if user clicks his image container, open file dialog
+    document.querySelector('.photoWrap').addEventListener('click', ()=> imgUpload.click());
+
+    // accessibility: keyboard begin
+    beginBtn.addEventListener('keyup', e=>{ if(e.key==='Enter') beginBtn.click(); });
+
+    // small helper: if user drops an image onto page
+    window.addEventListener('dragover', e=>e.preventDefault());
+    window.addEventListener('drop', e=>{
+      e.preventDefault();
+      if(e.dataTransfer.files && e.dataTransfer.files[0]){
+        const f = e.dataTransfer.files[0];
+        if(f.type.startsWith('image/')){
+          heroImg.src = URL.createObjectURL(f);
+        }else if(f.type.startsWith('audio/')){
+          bgAudio.src = URL.createObjectURL(f);
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
